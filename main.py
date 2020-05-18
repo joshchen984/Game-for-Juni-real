@@ -20,10 +20,19 @@ def screenMessage(win, msg, color, size, changeY = 0):
   win.blit(text, textRect)
   return textRect
 
-def showScore(win, score):
+def message(win, msg, coordinates):
   font = pygame.font.SysFont(None, 40)
-  text = font.render("Score: " + str(score), True, (255, 255, 255))
-  win.blit(text, (0, 0))
+  text = font.render(msg, True, (255, 255, 255))
+  win.blit(text, coordinates)
+
+def showScore(win, score):
+  message(win, "Score: " + str(score), (0,0))
+
+def showSprint(win):
+  if(p.reloadSprint() <= 0):
+    message(win, "Can Sprint", (155,0))
+  else:
+    message(win, str(p.reloadSprint()), (200,0))
 
 def createEnemies(enemies, num, speed):
   for i in range(num):
@@ -39,7 +48,7 @@ def checkEnemyCollision(enemies, t):
 
 def instructions():
   running = True
-  text = ("Use the arrow keys to move the player.", "Blue players are the infected people.", "If you touch an infected person you lose", "Try to stay healthy as long as you can.")
+  text = ("Use the arrow keys to move the player.", "Pressing the space bar will give you a short","burst of speed","Blue players are the infected people.", "If you touch an infected person you lose", "Try to stay healthy as long as you can.")
   font = pygame.font.SysFont(None, 40)
   rendered_text = []
   for line in text:
@@ -72,7 +81,6 @@ def instructions():
     clock.tick(60)
 
 def main_menu():
-  print('hello')
   running = True
   clicking = False
   while running:
@@ -108,7 +116,7 @@ def game():
 
   #Creating the enemies
   enemies = []
-  createEnemies(enemies, 2, 5)
+  createEnemies(enemies, 2, 3)
 
 
   score = 0
@@ -136,11 +144,13 @@ def game():
           if(event.key == pygame.K_p):
             p.x = 250
             p.y = 400
-            p.speed = 5
+            p.speed = 3
+            p.sprintReload = 0
+            p.sprintTimer = 0
             background.speed = 2
             score = 0 
             enemies = []
-            createEnemies(enemies, 2, 5)
+            createEnemies(enemies, 2, 3)
             last_time = time()
             gameOver = False
             
@@ -149,23 +159,23 @@ def game():
             gameOver = False
 
     t = time()-last_time
-    t*=60
+    t*=50
     last_time = time()
 
     #Increasing score and speed
     score +=1
-    p.walkSpeed = 5+score//300
-    background.speed = 2+ score//300
+    p.walkSpeed = 3+score//400
+    background.speed = 2+ score//400
 
     #Checking if the player closed the screen or if it's time for a new enemy to come on the screen
     for event in pygame.event.get():
       if(event.type == pygame.QUIT):
         run = False  
       if(event.type == enemyTime):
-        if(score//150 >5):
-          createEnemies(enemies, randint(3,6), 5 + score//300)
+        if(score//200 >5):
+          createEnemies(enemies, randint(3,6), 3 + score//400)
         else:
-          createEnemies(enemies, 1 + randint(score//300,score//150), 5+score//300)
+          createEnemies(enemies, 1 + randint(score//400,score//200), 3+score//400)
     #drawing background      
     background.draw(win, t)
 
@@ -176,8 +186,9 @@ def game():
     p.draw(win, winWidth, winHeight, t)
 
     showScore(win, score)
+    showSprint(win)
     pygame.display.update()
-    clock.tick(60)
+    clock.tick(50)
 
 # Setting up background
 winWidth = 700
@@ -186,8 +197,7 @@ win = pygame.display.set_mode((winWidth, winHeight))
 pygame.display.set_caption("Juni Game")
 clock = pygame.time.Clock()
 #creating player
-p  = Player(250, 400, 51, 73, 5)
+p  = Player(250, 400, 51, 73, 3)
 
 #starting the game
-print("yes")
 main_menu()

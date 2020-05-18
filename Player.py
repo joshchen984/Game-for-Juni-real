@@ -29,13 +29,14 @@ class Player(Entity):
       self.canSprint = True
     if(self.sprintTimer<=0):
       self.speed = self.walkSpeed
+    return int(self.sprintReload/1000)
 
 
   def sprint(self):
     self.canSprint = False
-    self.sprintTimer = 1000
-    self.sprintReload = 5000
-    self.speed +=7
+    self.sprintTimer = 500
+    self.sprintReload = 6000
+    self.speed +=4
 
   def getMove(self, winWidth, winHeight, t):
     self.reloadSprint()
