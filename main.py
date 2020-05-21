@@ -3,22 +3,17 @@ from time import time
 from Player import Player
 from Background import Background
 from Enemy import Enemy
+from Button import Button
 from random import randint
 from math import hypot
 pygame.init()
 
-
-def getTextRect(msg, color, font):
-  text = font.render(msg, True, color)
-  msgRect = text.get_rect()
-  return text, msgRect
-
 def screenMessage(win, msg, color, size, changeY = 0):
   font = pygame.font.SysFont(None, size)
-  text, textRect = getTextRect(msg, color, font)
+  text = font.render(msg, True, color)
+  textRect = text.get_rect()
   textRect.center = (winWidth//2, winHeight//2+changeY)
   win.blit(text, textRect)
-  return textRect
 
 def message(win, msg, coordinates):
   font = pygame.font.SysFont(None, 40)
@@ -36,7 +31,8 @@ def showSprint(win):
 
 def createEnemies(enemies, num, speed):
   for i in range(num):
-    enemies.append(Enemy(randint(5,649), 51, 73, speed))
+    enemy_x = randint(5,649)
+    enemies.append(Enemy(enemy_x, 51, 73, speed))
 
 def checkEnemyCollision(enemies, t):
   for enemy in enemies:
@@ -48,8 +44,8 @@ def checkEnemyCollision(enemies, t):
 
 def instructions():
   running = True
-  text = ("Use the arrow keys to move the player.", "Pressing the space bar will give you a short","burst of speed","Blue players are the infected people.", "If you touch an infected person you lose", "Try to stay healthy as long as you can.")
-  font = pygame.font.SysFont(None, 40)
+  text = ("To prevent the spread of COVID-19, you must practice social distancing to avoid catching the virus.","The objective of the game is to avoid running into other people while taking a neighborhood jog.","The longer you stay away from others, the higher your score will be.","Use the ARROW keys to move the player.", "Pressing the SPACE BAR will give you a short burst of speed", "If you touch another person, the game will end.")
+  font = pygame.font.SysFont(None, 30)
   rendered_text = []
   for line in text:
     rendered_text.append(font.render(line, True, (0,0,0)))
@@ -62,52 +58,41 @@ def instructions():
     win.fill((255,255,255))
     win.blit(arrow, (0,0))
     for i in range(0,len(rendered_text)):
-      win.blit(rendered_text[i], (100, 100 + i*40))
+      win.blit(rendered_text[i], (10, 100 + i*40))
     mx, my = pygame.mouse.get_pos()
 
     #finding distance from mouse to back button
     arrow_distance = int(hypot(mx-x, my-y))
     if(arrow_distance <= radius and clicking):
       main_menu()
-
-    clicking = False
-    for event in pygame.event.get():
-      if event.type == pygame.QUIT:
-        running = False
-      elif event.type == pygame.MOUSEBUTTONDOWN:
-        if(event.button == 1):
-          clicking = True
-    pygame.display.update()
-    clock.tick(60)
+      running = False
+    if(running):
+      clicking = False
+      for event in pygame.event.get():
+        if event.type == pygame.QUIT:
+          running = False
+        elif event.type == pygame.MOUSEBUTTONDOWN:
+          if(event.button == 1):
+            clicking = True
+      pygame.display.update()
+      clock.tick(60)
 
 def main_menu():
   running = True
-  clicking = False
   while running:
     win.fill((255,255,255))
-    play_button = screenMessage(win, "Play", (0,0,0), 100)
-    instruction_button = screenMessage(win, "How to Play", (0,0,0), 50, 100)
-    mouse_x, mouse_y = pygame.mouse.get_pos()
+    play_button = Button( "Play", (0,0,0), 100, (0,0,200))
+    instruction_button = Button("Instructions", (0,0,0), 50, (0,0,200), 100)
+    play_button.display(win, winWidth, winHeight)
+    instruction_button.display(win, winWidth, winHeight)
 
-    if(play_button.collidepoint((mouse_x, mouse_y)) and clicking):
-      game()
-      running = False
-    elif(instruction_button.collidepoint((mouse_x, mouse_y)) and clicking):
-      instructions()
-      running = False
+    running, isClicking = instruction_button.check_clicking(instructions)
+    if(running):
+      running = play_button.check_clicking(game, True, isClicking)[0]
 
-    clicking = False
-    for event in pygame.event.get():
-      if event.type == pygame.QUIT:
-        running = False
-      elif event.type == pygame.MOUSEBUTTONDOWN:
-        if(event.button == 1):
-          clicking = True
-    pygame.display.update()
-    clock.tick(60)
+      pygame.display.update()
+      clock.tick(60)
   pygame.quit()
-        
-
 
 def game():
   bg = pygame.image.load("road.png")
@@ -117,7 +102,6 @@ def game():
   #Creating the enemies
   enemies = []
   createEnemies(enemies, 2, 3)
-
 
   score = 0
   last_time = time()
