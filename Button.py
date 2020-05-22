@@ -40,6 +40,8 @@ class Button:
       if(self.clicking):
         action()
         return (False, self.clicking)
+    else:
+        self.createButton()
       
     return (True, self.clicking)
 
