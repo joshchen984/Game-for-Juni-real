@@ -8,11 +8,13 @@ from random import randint
 from math import hypot
 pygame.init()
 
-def screenMessage(win, msg, color, size, changeY = 0):
-    font = pygame.font.SysFont(None, size)
+def screenMessage(win, msg, color, size, fonts,changeY = 0,showRect  = False, rectColor = (0,0,0)):
+    font = pygame.font.SysFont(fonts, size)
     text = font.render(msg, True, color)
     textRect = text.get_rect()
     textRect.center = (winWidth//2, winHeight//2+changeY)
+    if(showRect):
+        pygame.draw.rect(win, rectColor, textRect)
     win.blit(text, textRect)
 
 def message(win, msg, coordinates):
@@ -44,7 +46,10 @@ def checkEnemyCollision(enemies, t):
 
 def instructions():
     running = True
-    text = ("To prevent the spread of COVID-19, you must practice social distancing to avoid catching the virus.","The objective of the game is to avoid running into other people while taking a neighborhood jog.","The longer you stay away from others, the higher your score will be.","Use the ARROW keys to move the player.", "Pressing the SPACE BAR will give you a short burst of speed", "If you touch another person, the game will end.")
+    text = ("To prevent the spread of COVID-19, you must practice social","distancing to avoid catching the virus.",
+            "The objective of the game is to avoid running into other people while","taking a neighborhood jog.",
+            "The longer you stay away from others, the higher your score will be.","Use the WASD keys to move the player.", 
+            "Pressing the SPACE BAR will give you a short burst of speed.", "If you touch another person, the game will end.")
     font = pygame.font.SysFont(None, 30)
     rendered_text = []
     for line in text:
@@ -79,21 +84,20 @@ def instructions():
 
 def main_menu():
     running = True
-    play_button = Button( "Play", (0,0,0), 100, (0,0,200))
-    instruction_button = Button("Instructions", (0,0,0), 50, (0,0,200), 100)
+    play_button = Button( "Play", (255,255,255), 100, (0,168,243),(winWidth/2,winHeight/2), True)
+    instruction_button = Button("Instructions", (255,255,255), 50, (0,168,243),(winWidth/2,winHeight/2), True, 100)
     while running:
-        win.fill((255,255,255))
+        win.blit(title_screen, (0, 0))
+        screenMessage(win, "Quarantine Run", (243, 75, 0), 100, None, -200)
 
-        play_button.display(win, winWidth, winHeight)
-        instruction_button.display(win, winWidth, winHeight)
+        play_button.display(win)
+        instruction_button.display(win)
 
         running, isClicking = instruction_button.check_clicking(instructions)
         if(running):
             running = play_button.check_clicking(game, True, isClicking)[0]
-
             pygame.display.update()
             clock.tick(60)
-    pygame.quit()
 
 def game():
     bg = pygame.image.load("road.png")
@@ -108,16 +112,26 @@ def game():
     last_time = time()
     enemyTime = pygame.USEREVENT + 1
     pygame.time.set_timer(enemyTime, 1500)
+    p.x = 250
+    p.y = 400
+    p.speed = 3
+    p.sprintReload = 0
+    p.sprintTimer = 0
+    background.speed = 2
     gameOver = False
     run = True
+    main_button = Button("Main Menu", (255,255,255), 50, (0, 168, 243), (500, 20))
     #start of game
     while run:
         #Game Over Screen
         while(gameOver):
-            win.fill((255,255,255))
-            screenMessage(win, "Game Over!", (255, 0, 0), 100)
-            screenMessage(win, "Press P to play again or Q to quit", (255, 0, 0), 45, 50)
-            screenMessage(win, "Score: " + str(score), (255,0,0), 75, 100)
+            win.blit(ending_screen, (0,0))
+            main_button.display(win)
+            run = main_button.check_clicking(main_menu)[0]
+            gameOver = run
+            screenMessage(win, "Game Over!", (255, 0, 0), 100, None, -50)
+            screenMessage(win, "Press P to play again or Q to quit", (255, 0, 0), 45,None, 30)
+            screenMessage(win, "Score: " + str(score), (255,0,0), 75,None, 100)
             pygame.display.update()
 
             # Checking for player action
@@ -141,6 +155,7 @@ def game():
                     elif(event.key == pygame.K_q):
                         run = False
                         gameOver = False
+            clock.tick(60)
 
         t = time()-last_time
         t*=50
@@ -174,14 +189,17 @@ def game():
         pygame.display.update()
         clock.tick(50)
 
-# Setting up background
+# Setting up game
+title_screen = pygame.image.load("titleScreen.png")
+ending_screen = pygame.image.load("endingScreen.png")
 winWidth = 700
 winHeight = 600
 win = pygame.display.set_mode((winWidth, winHeight))
-pygame.display.set_caption("Juni Game")
+pygame.display.set_caption("Quarantine Run")
 clock = pygame.time.Clock()
 #creating player
 p  = Player(250, 400, 51, 73, 3)
 
 #starting the game
 main_menu()
+pygame.quit()
