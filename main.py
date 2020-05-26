@@ -7,7 +7,6 @@ from Button import Button
 from random import randint
 from math import hypot
 pygame.init()
-
 def screenMessage(win, msg, color, size, fonts,changeY = 0,showRect  = False, rectColor = (0,0,0)):
     font = pygame.font.SysFont(fonts, size)
     text = font.render(msg, True, color)
