@@ -16,9 +16,9 @@ def screenMessage(win, msg, color, size, fonts,changeY = 0,showRect  = False, re
         pygame.draw.rect(win, rectColor, textRect)
     win.blit(text, textRect)
 
-def message(win, msg, coordinates):
-    font = pygame.font.SysFont(None, 40)
-    text = font.render(msg, True, (255, 255, 255))
+def message(win, msg, coordinates, fontSize = 30, color = (255,255,255)):
+    font = pygame.font.SysFont(None, fontSize)
+    text = font.render(msg, True, color)
     win.blit(text, coordinates)
 
 def showScore(win, score):
@@ -26,9 +26,9 @@ def showScore(win, score):
 
 def showSprint(win):
     if(p.reloadSprint() <= 0):
-        message(win, "Can Sprint", (155,0))
+        message(win, "Sprint Available", (120,0))
     else:
-        message(win, str(p.reloadSprint()), (200,0))
+        message(win, str(p.reloadSprint()), (150,0))
 
 def createEnemies(enemies, num, speed):
     for i in range(num):
@@ -43,12 +43,37 @@ def checkEnemyCollision(enemies, t):
             enemies.remove(enemy)
     return False
 
+def endingMessage(score):
+    if(score < 400):
+        return ["You need to be more careful."]
+    elif (score < 900):
+        return ("You did a mediocre job at"," social distancing.")
+    elif (score < 1600):
+        return ["Good job at social distancing."]
+    elif (score < 2500):
+        return ("You're an expert social"," distancer!")
+    else:
+        return ("You are the best social distancer"," ever seen! Dr. Fauci thanks you.")
+
+def display_end_message(win, score):
+    rect = pygame.Rect(200, 300,500,200)
+    rect.center = (winWidth/2, 500)
+    pygame.draw.rect(win, (192,192,192), rect)
+    msg = endingMessage(score)
+    if(len(msg) > 1):
+        for i in range(0,len(msg)):
+            screenMessage(win, msg[i], (0,0,0), 40, None, 185 + i*30)
+
+    else:
+        screenMessage(win, msg[0], (0,0,0),40, None, 185)
+
+
 def instructions():
     running = True
-    text = ("To prevent the spread of COVID-19, you must practice social","distancing to avoid catching the virus.",
-            "The objective of the game is to avoid running into other people while","taking a neighborhood jog.",
-            "The longer you stay away from others, the higher your score will be.","Use the WASD keys to move the player.", 
-            "Pressing the SPACE BAR will give you a short burst of speed.", "If you touch another person, the game will end.")
+    text = ("-To prevent the spread of COVID-19, you must practice social","distancing to avoid catching the virus.",
+            "-The objective of the game is to avoid running into other people while","taking a neighborhood jog.",
+            "-The longer you stay away from others, the higher your score will be.","-Use the WASD keys to move the player.", 
+            "-Pressing the SPACE BAR will let you sprint for a short amount of time,"," followed by a 5 second cooldown.", "-If you touch another person, the game will end.")
     font = pygame.font.SysFont(None, 30)
     rendered_text = []
     for line in text:
@@ -62,7 +87,7 @@ def instructions():
         win.fill((255,255,255))
         win.blit(arrow, (0,0))
         for i in range(0,len(rendered_text)):
-            win.blit(rendered_text[i], (10, 100 + i*40))
+            win.blit(rendered_text[i], (10, 100 + i*30))
         mx, my = pygame.mouse.get_pos()
 
         #finding distance from mouse to back button
@@ -128,9 +153,10 @@ def game():
             main_button.display(win)
             run = main_button.check_clicking(main_menu)[0]
             gameOver = run
-            screenMessage(win, "Game Over!", (255, 0, 0), 100, None, -50)
-            screenMessage(win, "Press P to play again or Q to quit", (255, 0, 0), 45,None, 30)
-            screenMessage(win, "Score: " + str(score), (255,0,0), 75,None, 100)
+            screenMessage(win, "Game Over!", (255, 0, 0), 100, None, -100)
+            screenMessage(win, "Press P to play again or Q to quit", (255, 0, 0), 45,None, -20)
+            display_end_message(win, score)
+            screenMessage(win, "Score: " + str(score), (0,0,0), 75,None, 140)
             pygame.display.update()
 
             # Checking for player action
